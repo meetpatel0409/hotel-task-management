@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+
+# Your Local Database
+luxeops.db
+
+# Upload Files
+static/uploads/*
+
+# Keep Upload Folder Structure
+!static/uploads/.gitkeep
+
+# Test Reports
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Selenium
+selenium-screenshots/
+selenium-reports/
+
+# IDE Files
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build Files
+build/
+dist/
+*.egg-info/
+
+# Flask
+instance/
+.webassets-cache
