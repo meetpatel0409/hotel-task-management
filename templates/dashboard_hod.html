@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}HOD Hub - LuxeOps{% endblock %}
+
+{% block header_title %}
+Department Hub <span>Supervising {{ current_user.department }} operations</span>
+{% endblock %}
+
+{% block header_actions %}
+<button class="btn btn-primary" data-open-modal="scheduleModal">
+    <i class="fa-solid fa-calendar-plus" style="margin-right: 0.35rem;"></i> Schedule New Task
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Department Stats -->
+<div class="stats-grid">
+    <div class="stat-card interactive-card" data-filter="all" style="cursor: pointer;">
+        <div class="stat-icon info"><i class="fa-solid fa-list-check"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ total }}</span>
+            <span class="stat-label">Total Assigned</span>
+        </div>
+    </div>
+    <div class="stat-card interactive-card" data-filter="Pending" style="cursor: pointer;">
+        <div class="stat-icon warning"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ pending }}</span>
+            <span class="stat-label">Pending Staff</span>
+        </div>
+    </div>
+    <div class="stat-card interactive-card" data-filter="In Progress" style="cursor: pointer;">
+        <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ in_progress }}</span>
+            <span class="stat-label">In Progress</span>
+        </div>
+    </div>
+    <div class="stat-card interactive-card" data-filter="completed" style="cursor: pointer;">
+        <div class="stat-icon success"><i class="fa-solid fa-square-check"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ completed }}</span>
+            <span class="stat-label">Completed</span>
+        </div>
+    </div>
+</div>
+
+<!-- Shift Handover Requests -->
+{% set handover_requests = tasks | selectattr('status', 'equalto', 'Awaiting Handover') | list %}
+{% if handover_requests %}
+<div class="dashboard-section" id="handover-requests-section">
+    <div class="section-header">
+        <h2 class="section-title">Shift Handover Requests</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        {% for task in handover_requests %}
+            {% set proof = task.proofs[0] if task.proofs else None %}
+            <div class="card highlight">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <h3 style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--text-primary); margin: 0;">{{ task.title }}</h3>
+                            <span class="badge" style="background-color: var(--bg-tertiary); color: var(--accent-gold); font-size: 0.65rem; text-transform: none;">{{ task.category or 'General' }}</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Handover by <strong>{{ task.assignee.name }}</strong> ({{ task.assignee.department }})</span>
+                    </div>
+                    <span class="badge badge-handover">Awaiting Handover</span>
+                </div>
+                
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">
+                    {{ task.description or 'No instructions provided.' }}
+                </p>
+
+                {% if proof %}
+                    <div style="margin-bottom: 1.5rem; padding: 0.75rem; background-color: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-sm);">
+                        {% if proof.employee_notes %}
+                            <p style="font-size: 0.8rem; color: var(--text-primary); margin-bottom: 0.5rem;"><strong>Handover Notes:</strong> "{{ proof.employee_notes }}"</p>
+                        {% endif %}
+                        {% if proof.progress_image_path %}
+                            <div style="margin-top: 0.5rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Progress Photo:</span>
+                                <img src="{{ url_for('static', filename='uploads/' + proof.progress_image_path) }}" style="max-height: 120px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" style="width: 100%;" data-open-modal="reassignModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-category="{{ task.category or 'General' }}">
+                        <i class="fa-solid fa-user-pen" style="margin-right: 0.35rem;"></i> Reassign to Department Staff
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="dashboard-section" id="checklist-section">
+    <div class="section-header">
+        <h2 class="section-title">Department Tasks Checklist</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Task details</th>
+                    <th>Assigned Staff</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="checklist-tbody">
+                {% for task in tasks %}
+                    <tr class="task-row" data-status="{{ task.status }}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                                <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ task.title }}</strong>
+                                <span class="badge" style="background-color: var(--bg-tertiary); color: var(--accent-gold); font-size: 0.65rem; text-transform: none;">{{ task.category or 'General' }}</span>
+                                {% if task.location %}
+                                    <span class="badge" style="background-color: rgba(255,255,255,0.04); color: var(--text-secondary); font-size: 0.65rem; text-transform: none;"><i class="fa-solid fa-map-pin" style="margin-right: 0.25rem; color: var(--accent-gold);"></i>{{ task.location }}</span>
+                                {% endif %}
+                            </div>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.25rem;">
+                                {{ task.description or 'No description provided.' }}
+                            </span>
+                            <small style="display: block; font-size: 0.7rem; color: var(--text-muted);">
+                                <i class="fa-regular fa-calendar-plus" style="margin-right: 0.25rem;"></i> Created: {{ task.created_at.strftime('%b %d, %I:%M %p') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="profile-avatar" style="width: 26px; height: 26px; font-size: 0.7rem;">
+                                    {{ task.assignee.name[0] | upper if task.assignee else '?' }}
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.85rem; font-weight: 500;">{{ task.assignee.name if task.assignee else 'Unassigned' }}</span>
+                                    <small style="font-size: 0.65rem; color: var(--text-muted);">{{ task.assignee.role if task.assignee else 'Staff' }} ({{ task.assignee.department if task.assignee else 'General' }})</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ task.priority | lower }}">{{ task.priority }}</span>
+                        </td>
+                        <td>
+                            <span class="badge {% if task.status == 'Pending' %}badge-pending
+                                         {% elif task.status == 'In Progress' %}badge-progress
+                                         {% elif task.status == 'Completed' %}badge-completed
+                                         {% elif task.status == 'Approved' %}badge-approved
+                                         {% elif task.status == 'Rejected' %}badge-rejected
+                                         {% elif task.status == 'Awaiting Handover' %}badge-handover
+                                         {% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size: 0.8rem; font-weight: 500; display: block; color: {% if task.is_overdue() %}var(--danger){% else %}var(--text-secondary){% endif %};">
+                                {{ task.deadline.strftime('%b %d, %I:%M %p') }}
+                            </span>
+                            {% if task.is_overdue() %}
+                                <span class="badge badge-overdue" style="font-size: 0.6rem; padding: 0.1rem 0.35rem; margin-top: 0.2rem;">Overdue</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary btn-sm" data-open-modal="reassignModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}" data-task-category="{{ task.category or 'General' }}">
+                                <i class="fa-solid fa-user-pen"></i> Reassign
+                            </button>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No operational tasks scheduled.</td>
+                    </tr>
+                {% endfor %}
+                <tr id="no-tasks-row" style="display: none;">
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No tasks match the selected filter.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Schedule New Task -->
+<div class="modal" id="scheduleModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Schedule New Task</h3>
+            <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <form action="{{ url_for('create_task') }}" method="POST">
+            <div class="form-group">
+                <label for="task-title" class="form-label">Task Name</label>
+                <input type="text" id="task-title" name="title" class="form-control" placeholder="e.g. Clean Suite 305" required>
+            </div>
+            <div class="form-group">
+                <label for="task-location" class="form-label">Room / Location</label>
+                <input type="text" id="task-location" name="location" class="form-control" placeholder="e.g. Room 305, Boiler Room, Lobby" required>
+            </div>
+            <div class="form-group">
+                <label for="task-category" class="form-label">Task Category</label>
+                <select id="task-category" name="category" class="form-control" required>
+                    <option value="Room Cleaning">Room Cleaning</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Restaurant Prep">Restaurant Prep</option>
+                    <option value="Laundry">Laundry</option>
+                    <option value="Inventory Check">Inventory Check</option>
+                    <option value="Guest Service">Guest Service</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="task-desc" class="form-label">Instructions / Description</label>
+                <textarea id="task-desc" name="description" class="form-control" placeholder="Provide details (e.g. polish mirrors, replace towels)"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="assignee" class="form-label">Assign Department Employee</label>
+                <select id="assignee" name="assigned_to" class="form-control" required>
+                    <option value="">-- Choose Staff --</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="priority" class="form-label">Priority Level</label>
+                <select id="priority" name="priority" class="form-control">
+                    <option value="Low">Low Priority</option>
+                    <option value="Medium" selected>Medium Priority</option>
+                    <option value="High">High Priority</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="deadline" class="form-label">Deadline Date & Time</label>
+                <input type="datetime-local" id="deadline" name="deadline" class="form-control" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Dispatch Assignment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Reassign Task -->
+<div class="modal" id="reassignModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Reassign Task</h3>
+            <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            Assigning a new employee to task: <strong id="reassign-task-title" class="modal-task-title-placeholder" style="color: var(--text-primary);">[Task Name]</strong>
+        </div>
+        <form class="modal-action-form" action="{{ url_for('reassign_task', task_id=0) }}" data-original-action="{{ url_for('reassign_task', task_id=0) }}" method="POST">
+            <input type="hidden" name="task_id" class="modal-task-id-input" value="0">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="reassign-employee" class="form-label">New Assignee (Same Department)</label>
+                <select id="reassign-employee" name="assigned_to" class="form-control" required>
+                    <option value="">-- Choose Staff --</option>
+                    {% for emp in employees %}
+                        <option value="{{ emp.id }}">{{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Assignee</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
