@@ -8,7 +8,11 @@ from datetime import datetime, timedelta
 from app import create_app
 from models import db, User, Task, TaskProof
 
+<<<<<<< HEAD
 class HotelTaskTestCase(unittest.TestCase):
+=======
+class LuxeOpsTestCase(unittest.TestCase):
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
     def setUp(self):
         # Configure app for testing
         self.app = create_app()
@@ -89,7 +93,11 @@ class HotelTaskTestCase(unittest.TestCase):
     def test_routing_protection(self):
         # Try to access admin dashboard when not logged in
         response = self.client.get('/admin', follow_redirects=True)
+<<<<<<< HEAD
         self.assertIn(b"Sign In - Hotel Task System", response.data)
+=======
+        self.assertIn(b"Sign In - LuxeOps Portal", response.data)
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         
         # Log in as Employee and try to access Admin and HOD dashboards
         self.login("rahul@test.com", "emp123")

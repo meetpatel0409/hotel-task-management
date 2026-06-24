@@ -1,5 +1,9 @@
 function init() {
+<<<<<<< HEAD
     console.log("HotelTask main.js: Initializing scripts...");
+=======
+    console.log("LuxeOps main.js: Initializing scripts...");
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
     
     // Set min attribute and initialize Flatpickr for datetime inputs to prevent past selections and show custom calendar
     function setMinDateTime() {
@@ -424,8 +428,13 @@ function init() {
     const noTasksRow = document.getElementById('no-tasks-row');
     const tableDeptFilter = document.getElementById('table-dept-filter');
     
+<<<<<<< HEAD
     console.log("HotelTask main.js: interactiveCards found:", interactiveCards.length);
     console.log("HotelTask main.js: checklistTbody found:", !!checklistTbody);
+=======
+    console.log("LuxeOps main.js: interactiveCards found:", interactiveCards.length);
+    console.log("LuxeOps main.js: checklistTbody found:", !!checklistTbody);
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
     
     if (interactiveCards.length > 0 && checklistTbody) {
         function applyChecklistFilters() {
@@ -433,7 +442,11 @@ function init() {
             const filter = activeCard ? activeCard.getAttribute('data-filter') : 'all';
             const deptFilter = tableDeptFilter ? tableDeptFilter.value : 'all';
             
+<<<<<<< HEAD
             console.log("HotelTask main.js: Applying filters -> status filter:", filter, "| department filter:", deptFilter);
+=======
+            console.log("LuxeOps main.js: Applying filters -> status filter:", filter, "| department filter:", deptFilter);
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
             
             const rows = checklistTbody.querySelectorAll('.task-row');
             let visibleCount = 0;
@@ -474,7 +487,11 @@ function init() {
                 }
             });
             
+<<<<<<< HEAD
             console.log("HotelTask main.js: Filtering complete. Visible rows count:", visibleCount);
+=======
+            console.log("LuxeOps main.js: Filtering complete. Visible rows count:", visibleCount);
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
             
             if (noTasksRow) {
                 if (visibleCount === 0) {
@@ -487,7 +504,11 @@ function init() {
         
         interactiveCards.forEach(card => {
             card.addEventListener('click', function() {
+<<<<<<< HEAD
                 console.log("HotelTask main.js: Stat card clicked ->", card.getAttribute('data-filter'));
+=======
+                console.log("LuxeOps main.js: Stat card clicked ->", card.getAttribute('data-filter'));
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
                 interactiveCards.forEach(c => c.classList.remove('active-filter'));
                 card.classList.add('active-filter');
                 applyChecklistFilters();
@@ -512,7 +533,11 @@ function init() {
         
         if (tableDeptFilter) {
             tableDeptFilter.addEventListener('change', function() {
+<<<<<<< HEAD
                 console.log("HotelTask main.js: Department dropdown changed ->", tableDeptFilter.value);
+=======
+                console.log("LuxeOps main.js: Department dropdown changed ->", tableDeptFilter.value);
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
                 applyChecklistFilters();
             });
         }

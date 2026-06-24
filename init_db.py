@@ -19,6 +19,7 @@ def seed_database():
         # 1. Create standard users
         users_data = [
             # Admins
+<<<<<<< HEAD
             {"name": "System Admin", "email": "admin@hoteltask.com", "password": "admin123", "role": "Admin", "department": "Administration"},
             # Managers
             {"name": "Sarah Connor", "email": "manager@hoteltask.com", "password": "manager123", "role": "Manager", "department": "Operations"},
@@ -31,6 +32,20 @@ def seed_database():
             {"name": "Priya Sharma", "email": "priya@hoteltask.com", "password": "emp123", "role": "Employee", "department": "Housekeeping"},
             {"name": "Vikram Singh", "email": "vikram@hoteltask.com", "password": "emp123", "role": "Employee", "department": "Maintenance"},
             {"name": "Amit Patel", "email": "amit@hoteltask.com", "password": "emp123", "role": "Employee", "department": "Kitchen"}
+=======
+            {"name": "System Admin", "email": "admin@luxeops.com", "password": "admin123", "role": "Admin", "department": "Administration"},
+            # Managers
+            {"name": "Sarah Connor", "email": "manager@luxeops.com", "password": "manager123", "role": "Manager", "department": "Operations"},
+            # HODs
+            {"name": "Elena Rostova", "email": "housekeeping_hod@luxeops.com", "password": "hod123", "role": "HOD", "department": "Housekeeping"},
+            {"name": "Arthur Pendragon", "email": "maintenance_hod@luxeops.com", "password": "hod123", "role": "HOD", "department": "Maintenance"},
+            {"name": "Chef Marco", "email": "kitchen_hod@luxeops.com", "password": "hod123", "role": "HOD", "department": "Kitchen"},
+            # Employees
+            {"name": "Rahul Kumar", "email": "rahul@luxeops.com", "password": "emp123", "role": "Employee", "department": "Housekeeping"},
+            {"name": "Priya Sharma", "email": "priya@luxeops.com", "password": "emp123", "role": "Employee", "department": "Housekeeping"},
+            {"name": "Vikram Singh", "email": "vikram@luxeops.com", "password": "emp123", "role": "Employee", "department": "Maintenance"},
+            {"name": "Amit Patel", "email": "amit@luxeops.com", "password": "emp123", "role": "Employee", "department": "Kitchen"}
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         ]
         
         seeded_users = {}
@@ -49,6 +64,7 @@ def seed_database():
         print(f"Seeded {len(users_data)} users.")
 
         # 2. Seed some standard tasks
+<<<<<<< HEAD
         manager = seeded_users["manager@hoteltask.com"]
         hk_hod = seeded_users["housekeeping_hod@hoteltask.com"]
         maint_hod = seeded_users["maintenance_hod@hoteltask.com"]
@@ -56,6 +72,15 @@ def seed_database():
         rahul = seeded_users["rahul@hoteltask.com"]
         priya = seeded_users["priya@hoteltask.com"]
         vikram = seeded_users["vikram@hoteltask.com"]
+=======
+        manager = seeded_users["manager@luxeops.com"]
+        hk_hod = seeded_users["housekeeping_hod@luxeops.com"]
+        maint_hod = seeded_users["maintenance_hod@luxeops.com"]
+        
+        rahul = seeded_users["rahul@luxeops.com"]
+        priya = seeded_users["priya@luxeops.com"]
+        vikram = seeded_users["vikram@luxeops.com"]
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         
         now = datetime.utcnow()
         

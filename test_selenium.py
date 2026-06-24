@@ -23,7 +23,11 @@ def test_manager_dashboard_filtering():
         
         print("Logging in as Manager...")
         email_input = driver.find_element(By.ID, "email")
+<<<<<<< HEAD
         email_input.send_keys("manager@hoteltask.com")
+=======
+        email_input.send_keys("manager@luxeops.com")
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         
         password_input = driver.find_element(By.ID, "password")
         password_input.send_keys("manager123")

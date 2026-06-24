@@ -23,7 +23,11 @@ def test_hod_dashboard():
         
         print("Logging in as HOD...")
         email_input = driver.find_element(By.ID, "email")
+<<<<<<< HEAD
         email_input.send_keys("housekeeping_hod@hoteltask.com")
+=======
+        email_input.send_keys("housekeeping_hod@luxeops.com")
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         
         password_input = driver.find_element(By.ID, "password")
         password_input.send_keys("hod123")

@@ -39,7 +39,11 @@ def run_handover_e2e():
         time.sleep(1)
         
         print("2. Logging in as Rahul...")
+<<<<<<< HEAD
         driver.find_element(By.ID, "email").send_keys("rahul@hoteltask.com")
+=======
+        driver.find_element(By.ID, "email").send_keys("rahul@luxeops.com")
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         driver.find_element(By.ID, "password").send_keys("emp123")
         driver.find_element(By.XPATH, "//button[@type='submit']").click()
         time.sleep(2)
@@ -83,7 +87,11 @@ def run_handover_e2e():
         driver.get("http://127.0.0.1:5000/logout")
         time.sleep(1)
         driver.get("http://127.0.0.1:5000/login")
+<<<<<<< HEAD
         driver.find_element(By.ID, "email").send_keys("housekeeping_hod@hoteltask.com")
+=======
+        driver.find_element(By.ID, "email").send_keys("housekeeping_hod@luxeops.com")
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         driver.find_element(By.ID, "password").send_keys("hod123")
         driver.find_element(By.XPATH, "//button[@type='submit']").click()
         time.sleep(2)
@@ -131,7 +139,11 @@ def run_handover_e2e():
         driver.get("http://127.0.0.1:5000/logout")
         time.sleep(1)
         driver.get("http://127.0.0.1:5000/login")
+<<<<<<< HEAD
         driver.find_element(By.ID, "email").send_keys("priya@hoteltask.com")
+=======
+        driver.find_element(By.ID, "email").send_keys("priya@luxeops.com")
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         driver.find_element(By.ID, "password").send_keys("emp123")
         driver.find_element(By.XPATH, "//button[@type='submit']").click()
         time.sleep(2)

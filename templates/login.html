@@ -1,11 +1,19 @@
 {% extends 'base.html' %}
 
+<<<<<<< HEAD
 {% block title %}Sign In - Hotel Task System{% endblock %}
+=======
+{% block title %}Sign In - LuxeOps Portal{% endblock %}
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
 
 {% block content %}
 <div class="login-body">
     <div class="login-card">
+<<<<<<< HEAD
         <div class="login-logo" style="font-size: 1.8rem; letter-spacing: 0.5px;">Hotel<span>Task</span></div>
+=======
+        <div class="login-logo">Luxe<span>Ops</span></div>
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
         <div class="login-subtitle">Operations Portal</div>
         
         <form action="{{ url_for('login') }}" method="POST">
@@ -13,7 +21,11 @@
             
             <div class="form-group">
                 <label for="email" class="form-label" style="text-align: left;">Email Address</label>
+<<<<<<< HEAD
                 <input type="email" id="email" name="email" class="form-control" placeholder="name@hoteltask.com" required autocomplete="email">
+=======
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@luxeops.com" required autocomplete="email">
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
             </div>
             
             <div class="form-group" style="margin-bottom: 2rem;">
@@ -32,7 +44,20 @@
             </button>
         </form>
         
+<<<<<<< HEAD
 
+=======
+        <!-- Helpful guidelines for testing -->
+        <div style="margin-top: 3rem; text-align: left; padding: 1.25rem; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+            <div style="font-size: 0.75rem; color: var(--accent-gold); font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase;">Evaluation Credentials:</div>
+            <ul style="font-size: 0.7rem; color: var(--text-secondary); list-style: none; display: flex; flex-direction: column; gap: 0.35rem;">
+                <li><strong style="color: var(--text-primary);">Staff:</strong> rahul@luxeops.com / emp123</li>
+                <li><strong style="color: var(--text-primary);">HOD:</strong> housekeeping_hod@luxeops.com / hod123</li>
+                <li><strong style="color: var(--text-primary);">Manager:</strong> manager@luxeops.com / manager123</li>
+                <li><strong style="color: var(--text-primary);">Admin:</strong> admin@luxeops.com / admin123</li>
+            </ul>
+        </div>
+>>>>>>> 00230176abfcea18cc8bec9f8380a9e8c8aa516d
     </div>
 </div>
 {% endblock %}
