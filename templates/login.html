@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - Hotel Task System{% endblock %}
+
+{% block content %}
+<div class="login-body">
+    <div class="login-card">
+        <div class="login-logo" style="font-size: 1.8rem; letter-spacing: 0.5px;">Hotel<span>Task</span></div>
+        <div class="login-subtitle">Operations Portal</div>
+        
+        <form action="{{ url_for('login') }}" method="POST">
+
+            
+            <div class="form-group">
+                <label for="email" class="form-label" style="text-align: left;">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@hoteltask.com" required autocomplete="email">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="password" class="form-label" style="text-align: left;">Security Key</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer;">
+                    <input type="checkbox" name="remember" style="accent-color: var(--accent-gold);"> Remember Session
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; border-radius: var(--radius-sm);">
+                <i class="fa-solid fa-key" style="margin-right: 0.5rem;"></i> Establish Connection
+            </button>
+        </form>
+        
+
+    </div>
+</div>
+{% endblock %}

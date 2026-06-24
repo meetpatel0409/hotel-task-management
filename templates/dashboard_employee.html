@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}My Checklist - Hotel Task System{% endblock %}
+
+{% block header_title %}
+My Checklist 
+<span>
+    Department: <strong>{{ current_user.department }}</strong> 
+    {% if hod %}
+        | Head of Department: <strong>{{ hod.name }}</strong>
+    {% else %}
+        | HOD: <strong>None Assigned</strong>
+    {% endif %}
+</span>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Employee Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon info"><i class="fa-solid fa-list-check"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ pending_count }}</span>
+            <span class="stat-label">Pending Duties</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning"><i class="fa-solid fa-spinner"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ in_progress_count }}</span>
+            <span class="stat-label">In Progress</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon danger"><i class="fa-solid fa-clock"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ overdue_count }}</span>
+            <span class="stat-label">Overdue Duties</span>
+        </div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-details">
+            <span class="stat-value">{{ completed_tasks | length }}</span>
+            <span class="stat-label">Accomplished Tasks</span>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 1: Active Duties Checklist -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title">Active Work Checklist</h2>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3rem;">
+        {% for task in pending_tasks %}
+            {% set proof = task.proofs[0] if task.proofs else None %}
+            <div class="card {% if task.status == 'Rejected' %}highlight{% endif %}" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                            <h3 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--text-primary); margin: 0;">{{ task.title }}</h3>
+                            <span class="badge" style="background-color: var(--bg-tertiary); color: var(--accent-gold); font-size: 0.65rem; text-transform: none;">{{ task.category or 'General' }}</span>
+                            {% if task.location %}
+                                <span class="badge" style="background-color: rgba(255,255,255,0.05); color: var(--text-secondary); font-size: 0.65rem; text-transform: none;"><i class="fa-solid fa-map-pin" style="margin-right: 0.25rem; color: var(--accent-gold);"></i>{{ task.location }}</span>
+                            {% endif %}
+                            <span class="badge badge-{{ task.priority | lower }}" style="font-size: 0.65rem;">{{ task.priority }}</span>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fa-solid fa-hourglass-half"></i> Deadline: <strong style="color: {% if task.is_overdue() %}var(--danger){% else %}var(--text-primary){% endif %};">{{ task.deadline.strftime('%b %d, %I:%M %p') }}</strong></span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-calendar-plus"></i> Created: {{ task.created_at.strftime('%b %d, %I:%M %p') }}</span>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);"><i class="fa-regular fa-user"></i> Assigned by: <strong>{{ task.creator.name if task.creator else 'Manager' }}</strong> ({{ task.creator.role if task.creator else 'Manager' }})</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        {% if task.status == 'Pending' %}
+                            <span class="badge badge-pending">Not Started</span>
+                        {% elif task.status == 'In Progress' %}
+                            <span class="badge badge-progress">Working</span>
+                        {% elif task.status == 'Rejected' %}
+                            <span class="badge badge-rejected">Rejected & Pending Action</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">
+                    {{ task.description or 'No instructions provided.' }}
+                </p>
+
+                <!-- Previous Staff Handover Details -->
+                {% if proof and (proof.progress_image_path or proof.employee_notes) %}
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background-color: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-sm);">
+                        <strong style="color: var(--accent-gold); font-size: 0.85rem; display: block; margin-bottom: 0.5rem;"><i class="fa-solid fa-right-left"></i> Previous Staff Progress:</strong>
+                        {% if proof.employee_notes %}
+                            <p style="font-size: 0.8rem; color: var(--text-primary); margin-bottom: 0.5rem;"><strong>Handover Notes:</strong> "{{ proof.employee_notes }}"</p>
+                        {% endif %}
+                        {% if proof.progress_image_path %}
+                            <div style="margin-top: 0.5rem;">
+                                <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Progress Photo:</span>
+                                <img src="{{ url_for('static', filename='uploads/' + proof.progress_image_path) }}" style="max-width: 150px; max-height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- Feedback block if rejected -->
+                {% if task.status == 'Rejected' and proof and proof.comments %}
+                    <div style="padding: 1rem; background-color: var(--danger-light); border: 1px solid var(--danger); border-radius: var(--radius-sm); margin-bottom: 1.5rem;">
+                        <strong style="color: var(--danger); font-size: 0.85rem; display: block; margin-bottom: 0.25rem;"><i class="fa-solid fa-comment-dots"></i> Manager Instruction Feedback:</strong>
+                        <p style="font-size: 0.8rem; color: var(--text-primary);">"{{ proof.comments }}"</p>
+                    </div>
+                {% endif %}
+
+                <!-- Task Actions depending on status -->
+                {% if task.status == 'Pending' %}
+                    <form action="{{ url_for('start_task', task_id=task.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-play" style="margin-right: 0.35rem;"></i> Initialize Task
+                        </button>
+                    </form>
+                {% else %}
+                    <!-- In Progress or Rejected (Upload phase) -->
+                    {% if task.priority == 'Low' %}
+                        <div style="margin-bottom: 1.5rem; padding: 1.25rem; background: rgba(217, 119, 6, 0.05); border: 1px solid var(--border-gold); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; width: 100%;">
+                            <div>
+                                <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-gold); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                                    <i class="fa-solid fa-bolt"></i> Quick Completion Option
+                                </span>
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">This is a Low-priority duty. You can bypass photo uploads and complete it directly.</span>
+                            </div>
+                            <form action="{{ url_for('quick_complete', task_id=task.id) }}" method="POST" style="margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; width: 100%; justify-content: flex-end;">
+                                <input type="text" name="employee_notes" class="form-control" placeholder="Optional notes" style="max-width: 250px; padding: 0.4rem 0.8rem; font-size: 0.85rem; background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary); margin-bottom: 0;">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-check-double"></i> Quick Complete
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="upload-container" style="display: flex; gap: 2rem; flex-wrap: wrap; margin-top: 1rem;">
+                        
+                        <!-- Upload 1: Before Image -->
+                        <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 0.75rem;">
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">1. BEFORE PHOTO PROOF</span>
+                            {% if proof and proof.before_image_path %}
+                                <div style="position: relative;">
+                                    <img src="{{ url_for('static', filename='uploads/' + proof.before_image_path) }}" style="width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                    <button class="btn btn-secondary btn-sm" style="position: absolute; bottom: 10px; right: 10px;" data-open-modal="beforeModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Replace Photo
+                                    </button>
+                                </div>
+                            {% else %}
+                                <button class="btn btn-secondary" style="height: 180px; border: 2px dashed var(--border-color); background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;" data-open-modal="beforeModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+                                    <i class="fa-solid fa-camera" style="font-size: 2rem; color: var(--text-muted);"></i>
+                                    <span style="font-size: 0.8rem; font-weight: 500;">Upload BEFORE Photo</span>
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Upload 2: After Image -->
+                        <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 0.75rem;">
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">2. AFTER PHOTO PROOF</span>
+                            {% if not proof or not proof.before_image_path %}
+                                <div style="height: 180px; border: 2px dashed rgba(255,255,255,0.03); background: rgba(0,0,0,0.2); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: var(--text-muted);">
+                                    <i class="fa-solid fa-lock" style="font-size: 1.5rem;"></i>
+                                    <span style="font-size: 0.75rem; text-align: center; max-width: 200px;">Unlock this by uploading a BEFORE photo first.</span>
+                                </div>
+                            {% else %}
+                                {% if proof and proof.after_image_path and task.status != 'Rejected' %}
+                                    <div style="position: relative;">
+                                        <img src="{{ url_for('static', filename='uploads/' + proof.after_image_path) }}" style="width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                        <button class="btn btn-secondary btn-sm" style="position: absolute; bottom: 10px; right: 10px;" data-open-modal="afterModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+                                            <i class="fa-solid fa-arrow-up-from-bracket"></i> Replace Photo
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <button class="btn btn-primary" style="height: 180px; border: 2px dashed var(--border-gold); background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;" data-open-modal="afterModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+                                        <i class="fa-solid fa-circle-check" style="font-size: 2rem; color: var(--accent-gold);"></i>
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">Upload AFTER Photo & Submit</span>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    {% if task.status == 'In Progress' %}
+                        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                            <button class="btn btn-warning" data-open-modal="handoverModal" data-task-id="{{ task.id }}" data-task-title="{{ task.title }}">
+                                <i class="fa-solid fa-right-left" style="margin-right: 0.35rem;"></i> Handover Shift
+                            </button>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                <i class="fa-solid fa-umbrella-beach" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                No pending tasks assigned to you. Enjoy your time, or verify with the duty manager!
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- SECTION 2: Completed / Approved History Checklist -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title">Accomplishment Log</h2>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Task details</th>
+                    <th>Status</th>
+                    <th>Proof Images</th>
+                    <th>Date Completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in completed_tasks %}
+                    {% set proof = task.proofs[0] if task.proofs else None %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap;">
+                                <strong style="color: var(--text-primary); font-size: 0.9rem;">{{ task.title }}</strong>
+                                <span class="badge" style="background-color: var(--bg-tertiary); color: var(--accent-gold); font-size: 0.65rem; text-transform: none;">{{ task.category or 'General' }}</span>
+                                {% if task.location %}
+                                    <span class="badge" style="background-color: rgba(255,255,255,0.04); color: var(--text-secondary); font-size: 0.65rem; text-transform: none;"><i class="fa-solid fa-map-pin" style="margin-right: 0.25rem; color: var(--accent-gold);"></i>{{ task.location }}</span>
+                                {% endif %}
+                            </div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0.25rem;">
+                                {{ task.description or 'No details.' }}
+                            </span>
+                            <small style="display: block; font-size: 0.65rem; color: var(--text-muted);">
+                                <i class="fa-regular fa-calendar-plus" style="margin-right: 0.25rem;"></i> Created: {{ task.created_at.strftime('%b %d, %H:%M') }} | <i class="fa-regular fa-user" style="margin-right: 0.25rem;"></i> Assigned by: <strong>{{ task.creator.name if task.creator else 'Manager' }}</strong>
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge {% if task.status == 'Approved' %}badge-approved{% else %}badge-completed{% endif %}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                {% if proof and proof.before_image_path %}
+                                    <a href="{{ url_for('static', filename='uploads/' + proof.before_image_path) }}" target="_blank" title="View Before Photo">
+                                        <img src="{{ url_for('static', filename='uploads/' + proof.before_image_path) }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                                    </a>
+                                {% endif %}
+                                {% if proof and proof.after_image_path %}
+                                    <a href="{{ url_for('static', filename='uploads/' + proof.after_image_path) }}" target="_blank" title="View After Photo">
+                                        <img src="{{ url_for('static', filename='uploads/' + proof.after_image_path) }}" style="width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                                {{ proof.uploaded_at.strftime('%b %d, %H:%M') if proof and proof.uploaded_at else 'Unknown' }}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No accomplishments recorded in this log. Let's make history!</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal: Upload Before Photo -->
+<div class="modal" id="beforeModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Upload BEFORE Photo Proof</h3>
+            <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        
+        <form class="modal-action-form" action="{{ url_for('upload_before', task_id=0) }}" data-original-action="{{ url_for('upload_before', task_id=0) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="task_id" class="modal-task-id-input" value="0">
+            
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Select a photo showing the initial state of task: <strong class="modal-task-title-placeholder" style="color: var(--text-primary);">[Task Name]</strong>
+            </div>
+            
+            <!-- Custom File Input with Visual Preview -->
+            <div class="image-preview-container">
+                <i class="fa-solid fa-cloud-arrow-up image-preview-icon"></i>
+                <img class="image-preview-img" src="" alt="Selected Before image">
+                <div class="image-preview-text">Click to choose image file (PNG, JPG, JPEG, WEBP)</div>
+                <input type="file" name="before_photo" accept="image/*" style="display: none;" required>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Upload Before Image</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Upload After Photo -->
+<div class="modal" id="afterModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Upload AFTER Photo Proof</h3>
+            <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        
+        <form class="modal-action-form" action="{{ url_for('upload_after', task_id=0) }}" data-original-action="{{ url_for('upload_after', task_id=0) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="task_id" class="modal-task-id-input" value="0">
+            
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Select a photo showing the finalized state of task: <strong class="modal-task-title-placeholder" style="color: var(--text-primary);">[Task Name]</strong>
+            </div>
+            
+            <!-- Custom File Input with Visual Preview -->
+            <div class="image-preview-container">
+                <i class="fa-solid fa-cloud-arrow-up image-preview-icon"></i>
+                <img class="image-preview-img" src="" alt="Selected After image">
+                <div class="image-preview-text">Click to choose image file (PNG, JPG, JPEG, WEBP)</div>
+                <input type="file" name="after_photo" accept="image/*" style="display: none;" required>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label for="employee-notes" class="form-label">Optional Notes</label>
+                <textarea id="employee-notes" name="employee_notes" class="form-control" placeholder="Add any comments or observations (optional)"></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-success">Complete & Submit Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Shift Handover -->
+<div class="modal" id="handoverModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Shift Handover Request</h3>
+            <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        
+        <form class="modal-action-form" action="{{ url_for('handover_task', task_id=0) }}" data-original-action="{{ url_for('handover_task', task_id=0) }}" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="task_id" class="modal-task-id-input" value="0">
+            
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Upload a progress photo and describe the current state for task: <strong class="modal-task-title-placeholder" style="color: var(--text-primary);">[Task Name]</strong>
+            </div>
+            
+            <!-- Custom File Input with Visual Preview -->
+            <div class="image-preview-container" style="margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-cloud-arrow-up image-preview-icon"></i>
+                <img class="image-preview-img" src="" alt="Selected Progress image">
+                <div class="image-preview-text">Click to choose progress image (PNG, JPG, JPEG, WEBP)</div>
+                <input type="file" name="progress_photo" accept="image/*" style="display: none;" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label for="handover-notes" class="form-label">Handover Notes (Describe remaining work)</label>
+                <textarea id="handover-notes" name="employee_notes" class="form-control" placeholder="e.g. Completed 50% of the room cleaning. Replacing bedsheets is pending." required></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-warning">Submit Handover Request</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

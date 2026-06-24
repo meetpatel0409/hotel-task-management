@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Task System - Operations Portal{% endblock %}</title>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.0.6">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN for Reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Flatpickr for Visual Calendar/Time Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+
+    <!-- Notification Toast Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <span class="alert-message">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check" style="color: var(--success); margin-right: 0.5rem;"></i>
+                            {% elif category == 'error' or category == 'danger' %}
+                                <i class="fa-solid fa-circle-exclamation" style="color: var(--danger); margin-right: 0.5rem;"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning); margin-right: 0.5rem;"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info" style="color: var(--info); margin-right: 0.5rem;"></i>
+                            {% endif %}
+                            {{ message }}
+                        </span>
+                        <button class="alert-close">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="app-container">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo" style="font-size: 1.5rem; letter-spacing: 0.5px;">Hotel<span>Task</span></div>
+            </div>
+            
+            <div class="user-profile-badge">
+                <div class="profile-avatar">
+                    {{ current_user.name[0] | upper }}
+                </div>
+                <div class="profile-info">
+                    <span class="profile-name">{{ current_user.name }}</span>
+                    <span class="profile-role">
+                        {{ current_user.role }}
+                        {% if current_user.department %}
+                            <small style="display:block; font-size:0.65rem; color:var(--text-secondary); text-transform:none;">{{ current_user.department }}</small>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <nav class="nav-links">
+                {% if current_user.role == 'Admin' %}
+                    <li class="nav-link active">
+                        <a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-sliders"></i> Control Panel</a>
+                    </li>
+                {% elif current_user.role == 'HOD' %}
+                    <li class="nav-link active">
+                        <a href="{{ url_for('hod_dashboard') }}"><i class="fa-solid fa-layer-group"></i> Department Hub</a>
+                    </li>
+                {% elif current_user.role == 'Manager' %}
+                    <li class="nav-link active">
+                        <a href="{{ url_for('manager_dashboard') }}"><i class="fa-solid fa-chess-queen"></i> Operations Center</a>
+                    </li>
+                {% elif current_user.role == 'Employee' %}
+                    <li class="nav-link active">
+                        <a href="{{ url_for('employee_dashboard') }}"><i class="fa-solid fa-list-check"></i> My Checklist</a>
+                    </li>
+                {% endif %}
+                
+                <li class="nav-link logout-link">
+                    <a href="{{ url_for('logout') }}"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
+                </li>
+            </nav>
+        </aside>
+        <div class="sidebar-overlay"></div>
+        {% endif %}
+
+        <!-- Main Body Wrapper -->
+        <main class="main-content" style="{% if not current_user.is_authenticated %}margin-left: 0; padding: 0;{% endif %}">
+            {% if current_user.is_authenticated %}
+            <header class="top-header">
+                <div class="mobile-header-brand">
+                    <button class="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                    <div class="brand-logo mobile-logo" style="font-size: 1.5rem; letter-spacing: 0.5px;">Hotel<span>Task</span></div>
+                </div>
+                <div class="header-title">
+                    {% block header_title %}Dashboard{% endblock %}
+                </div>
+                <div class="header-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
+            </header>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=1.0.6"></script>
+</body>
+</html>
